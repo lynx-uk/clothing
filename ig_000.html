@@ -585,7 +585,7 @@
             .then(response => response.json())
             .then(data => {
                 if (data.ok) {
-                    feedback.textContent = 'Message sent successfully!';
+                    feedback.textContent = '';
                 } else {
                     feedback.textContent = 'Error sending message.';
                 }
